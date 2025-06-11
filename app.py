@@ -1,22 +1,39 @@
 import streamlit as st
-from openai import OpenAI
 import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_community.llms import Ollama
+from langchain.chains import RetrievalQA
+from langchain.prompts import PromptTemplate
+from prompts.system_prompt import get_system_prompt
 
 # Set page config
 st.set_page_config(
-    page_title="AI Chat Assistant",
+    page_title="AI Chat Assistant (Internal PDF RAG)",
     page_icon="🤖",
     layout="wide"
 )
 
-# Initialize session state for chat history
+st.title("🤖 AI Chat Assistant (Internal PDF RAG)")
+
+CHROMA_PATH = "chroma_db"
+
+# Language selector
+language = st.radio("Choose the language for the assistant's answers:", ["English", "German"], horizontal=True)
+
+# Check if vectorstore exists
+if not os.path.exists(CHROMA_PATH) or len(os.listdir(CHROMA_PATH)) == 0:
+    st.error(f"Vectorstore not found in '{CHROMA_PATH}'. Please run 'python scripts/build_vectorstore.py' to build it from your PDFs.")
+    st.stop()
+
+# Load vectorstore and retriever
+embeddings = OllamaEmbeddings(model="nomic-embed-text")
+vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
+retriever = vectorstore.as_retriever()
+
+st.success("Knowledge base loaded from internal PDFs!")
+
+# Session state for chat
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -53,45 +70,41 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Title
-st.title("🤖 AI Chat Assistant")
-
 # Display chat messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Chat input
-if prompt := st.chat_input("What would you like to know?"):
-    # Add user message to chat history
+# Chat input and RAG response
+if prompt := st.chat_input("Ask a question about your internal documents..."):
+    # Regenerate system prompt and prompt template with current language
+    system_prompt = get_system_prompt(output_language=language, extra_instructions=None)
+    custom_prompt = PromptTemplate(
+        input_variables=["context", "question"],
+        template=f"""{system_prompt}
+
+Context:
+{{context}}
+
+Question:
+{{question}}
+
+Answer:"""
+    )
+    llm = Ollama(model="llama3")
+    qa_chain = RetrievalQA.from_chain_type(
+        llm=llm,
+        retriever=retriever,
+        return_source_documents=True,
+        chain_type="stuff",
+        chain_type_kwargs={"prompt": custom_prompt}
+    )
     st.session_state.messages.append({"role": "user", "content": prompt})
-    
-    # Display user message
     with st.chat_message("user"):
         st.markdown(prompt)
-    
-    # Get AI response
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
-        full_response = ""
-        
-        # Get response from OpenAI
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True
-        )
-        
-        # Stream the response
-        for chunk in response:
-            if chunk.choices[0].delta.content is not None:
-                full_response += chunk.choices[0].delta.content
-                message_placeholder.markdown(full_response + "▌")
-        
-        message_placeholder.markdown(full_response)
-    
-    # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": full_response}) 
+        result = qa_chain.invoke({"query": prompt})
+        answer = result["result"]
+        message_placeholder.markdown(answer)
+    st.session_state.messages.append({"role": "assistant", "content": answer}) 

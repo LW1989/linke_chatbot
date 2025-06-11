@@ -42,4 +42,9 @@ Thumbs.db
 .streamlit/
 
 # Jupyter Notebook
-.ipynb_checkpoints 
+.ipynb_checkpoints
+
+# Ignore internal documents and extracted text
+internal_docs/
+extracted_text/
+chroma_db/ 
