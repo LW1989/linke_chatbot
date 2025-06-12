@@ -22,8 +22,36 @@ from urllib.parse import urljoin, urlparse
 
 # === CONFIGURATION ============================================================
 START_URLS = [
-    "https://www.die-linke.de/partei/parteidemokratie/parteitag/parteitage-der-partei-die-linke-archiv/",
-    "https://www.die-linke.de/partei/parteidemokratie/parteivorstand/parteivorstand-2024-2026/beschluesse/",
+    #"https://www.die-linke.de/partei/parteidemokratie/parteitag/parteitage-der-partei-die-linke-archiv/",
+    #"https://www.die-linke.de/partei/parteidemokratie/parteivorstand/parteivorstand-2024-2026/beschluesse/",
+    "https://www.die-linke.de/themen/",
+    "https://www.die-linke.de/themen/arbeit/",
+    "https://www.die-linke.de/themen/agrarwende/",
+    "https://www.die-linke.de/themen/auf-den-punkt-gebracht/",
+    "https://www.die-linke.de/themen/bildung/",
+    "https://www.die-linke.de/themen/cannabis/",
+    "https://www.die-linke.de/themen/digitalisierung/",
+    "https://www.die-linke.de/themen/demokratie/",
+    "https://www.die-linke.de/themen/europa/",
+    "https://www.die-linke.de/themen/flucht-und-migration/",
+    "https://www.die-linke.de/themen/frieden/",
+    "https://www.die-linke.de/themen/feministische-politik/",
+    "https://www.die-linke.de/themen/international/",
+    "https://www.die-linke.de/themen/antifaschismus/",
+    "https://www.die-linke.de/themen/klimaschutz/",
+    "https://www.die-linke.de/themen/kultur/",
+    "https://www.die-linke.de/themen/kommunalpolitik/",
+    "https://www.die-linke.de/themen/mobilitaet/",
+    "https://www.die-linke.de/themen/ostdeutschland/",
+    "https://www.die-linke.de/themen/pflege-und-gesundheit/",
+    "https://www.die-linke.de/themen/preissteigerungen/",
+    "https://www.die-linke.de/themen/queer/",
+    "https://www.die-linke.de/themen/rente/",
+    "https://www.die-linke.de/themen/steuern/",
+    "https://www.die-linke.de/themen/soziale-sicherheit/",
+    "https://www.die-linke.de/themen/tierschutz/",
+    "https://www.die-linke.de/themen/wohnen/",
+    "https://www.die-linke.de/themen/wirtschaft/",
 ]
 
 OUTPUT_DIR = "internal_docs"     # Everything lands in this folder

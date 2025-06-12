@@ -6,6 +6,8 @@ from langchain_community.llms import Ollama
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from prompts.system_prompt import get_system_prompt
+from dotenv import load_dotenv
+load_dotenv()
 
 # Set page config
 st.set_page_config(
@@ -13,6 +15,24 @@ st.set_page_config(
     page_icon="🤖",
     layout="wide"
 )
+
+# --- Simple Password Protection ---
+PASSWORD = os.environ.get("APP_PASSWORD", "changeme")
+
+def login():
+    st.title("🔒 Login Required")
+    pw = st.text_input("Password", type="password")
+    if pw == PASSWORD:
+        st.session_state["authenticated"] = True
+        st.success("Logged in!")
+        st.experimental_rerun()
+    elif pw:
+        st.error("Incorrect password")
+
+if "authenticated" not in st.session_state:
+    login()
+    st.stop()
+# --- End Password Protection ---
 
 st.title("🤖 AI Chat Assistant (Internal PDF RAG)")
 
